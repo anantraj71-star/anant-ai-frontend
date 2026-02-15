@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Anant AI</title>
+  <style>
+    body {
+      font-family: Arial;
+      background: #111;
+      color: white;
+      text-align: center;
+      padding: 50px;
+    }
+    input {
+      width: 60%;
+      padding: 10px;
+      font-size: 16px;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      background: #00ffcc;
+      border: none;
+      cursor: pointer;
+    }
+    #response {
+      margin-top: 20px;
+      font-size: 18px;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>🤖 Anant AI</h1>
+  <input id="input" placeholder="Ask me anything..." />
+  <button onclick="send()">Send</button>
+
+  <div id="response"></div>
+
+  <script>
+    async function send() {
+      const message = document.getElementById("input").value;
+
+      const res = await fetch("https://anant-ai-backend.onrender.com/chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ message })
+      });
+
+      const data = await res.json();
+
+      document.getElementById("response").innerText =
+        data.choices[0].message.content;
+    }
+  </script>
+
+</body>
+</html>
