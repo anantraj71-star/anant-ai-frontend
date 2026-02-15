@@ -1,58 +1,126 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Anant AI</title>
+  <title>Anant AI 🤖</title>
   <style>
     body {
-      font-family: Arial;
+      font-family: Arial, sans-serif;
       background: #111;
       color: white;
-      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
       padding: 50px;
     }
+    h1 {
+      margin-bottom: 20px;
+    }
+    #chatBox {
+      width: 100%;
+      max-width: 600px;
+      min-height: 400px;
+      border: 1px solid #555;
+      padding: 10px;
+      margin-bottom: 10px;
+      overflow-y: auto;
+      background: #222;
+    }
+    .message {
+      margin: 5px 0;
+      padding: 8px 12px;
+      border-radius: 8px;
+      max-width: 80%;
+    }
+    .user {
+      background: #00ffcc;
+      color: black;
+      align-self: flex-end;
+    }
+    .ai {
+      background: #3333ff;
+      color: white;
+      align-self: flex-start;
+    }
     input {
-      width: 60%;
+      width: 70%;
       padding: 10px;
       font-size: 16px;
     }
     button {
       padding: 10px 20px;
       font-size: 16px;
+      margin-left: 5px;
+      cursor: pointer;
       background: #00ffcc;
       border: none;
-      cursor: pointer;
+      color: black;
+      font-weight: bold;
     }
-    #response {
-      margin-top: 20px;
-      font-size: 18px;
-      white-space: pre-wrap;
+    #status {
+      margin-top: 10px;
+      font-weight: bold;
     }
   </style>
 </head>
 <body>
 
   <h1>🤖 Anant AI</h1>
-  <input id="input" placeholder="Ask me anything..." />
-  <button onclick="send()">Send</button>
 
-  <div id="response"></div>
+  <div id="chatBox"></div>
+
+  <input id="input" placeholder="Type something..." />
+  <button onclick="send()">Send</button>
+  <button onclick="checkStatus()">Check Backend Status</button>
+
+  <p id="status"></p>
 
   <script>
+    const chatBox = document.getElementById("chatBox");
+
+    function addMessage(text, sender) {
+      const msg = document.createElement("div");
+      msg.classList.add("message", sender);
+      msg.innerText = text;
+      chatBox.appendChild(msg);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
     async function send() {
-      const message = document.getElementById("input").value;
+      const input = document.getElementById("input");
+      const message = input.value.trim();
+      if (!message) return;
 
-      const res = await fetch("https://anant-ai-backend.onrender.com/chat", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ message })
-      });
+      addMessage(message, "user");
+      input.value = "";
+      addMessage("Typing...", "ai");
 
-      const data = await res.json();
+      try {
+        const res = await fetch("https://anant-ai-backend.onrender.com/chat", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ message })
+        });
 
-      document.getElementById("response").innerText =
-        data.choices[0].message.content;
+        const data = await res.json();
+        const aiMsg = data.choices?.[0]?.message?.content || "Error: No response";
+        chatBox.lastChild.innerText = aiMsg;
+      } catch (err) {
+        chatBox.lastChild.innerText = "❌ Backend Offline or Error!";
+      }
+    }
+
+    async function checkStatus() {
+      const statusEl = document.getElementById("status");
+      statusEl.innerText = "Checking...";
+      try {
+        const res = await fetch("https://anant-ai-backend.onrender.com");
+        if (res.ok) statusEl.innerText = "✅ Backend is ONLINE!";
+        else statusEl.innerText = "⚠️ Backend is OFFLINE!";
+      } catch (err) {
+        statusEl.innerText = "❌ Backend is OFFLINE!";
+      }
     }
   </script>
 
